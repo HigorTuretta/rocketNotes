@@ -13,7 +13,7 @@ function AuthProvider({ children }) {
       const { user, token } = response.data;
       localStorage.setItem("@rocketNotes:user", JSON.stringify(user));
       localStorage.setItem("@rocketNotes:token", token);
-      api.defaults.headers.authorization = `Bearer ${token}`; // inserindo um token do tipo bearer de autorização em todas as requisições a partir de agora.
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`; // inserindo um token do tipo bearer de autorização em todas as requisições a partir de agora.
       setData({ user, token });
     } catch (error) {
       if (error.response) {
@@ -31,12 +31,38 @@ function AuthProvider({ children }) {
     setData({});
   }
 
+  async function updateProfile({ user, avatarFile }) {
+    try {
+
+      if(avatarFile){
+        const fileUploadForm = new FormData();
+        fileUploadForm.append('avatar', avatarFile);
+
+        const response = await api.patch('/users/avatar', fileUploadForm);
+        user.avatar = response.data.avatar;
+      }
+
+      await api.put("/users", user);
+      user.password = ''
+      user.old_password = ''
+      
+      localStorage.setItem("@rocketNotes:user", JSON.stringify(user));
+      setData({ user, token: data.token });
+    } catch (error) {
+      if (error.response) {
+        alert(error.response.data.message);
+      } else {
+        alert("Não foi possivel atualizar o perfil.");
+      }
+    }
+  }
+
   useEffect(() => {
     const token = localStorage.getItem("@rocketNotes:token");
     const user = localStorage.getItem("@rocketNotes:user");
 
     if (token && user) {
-      api.defaults.headers.authorization = `Bearer ${token}`; // inserindo um token do tipo bearer de autorização em todas as requisições a partir de agora.
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`; // inserindo um token do tipo bearer de autorização em todas as requisições a partir de agora.
       setData({ token, user: JSON.parse(user) });
     }
   }, []);
@@ -46,6 +72,7 @@ function AuthProvider({ children }) {
       value={{
         signIn,
         signOut,
+        updateProfile,
         user: data.user,
       }}
     >
