@@ -36,16 +36,6 @@ export function Home() {
     navigate(`/details/${id}`);
   }
 
-  useEffect(() => {
-    async function fetchTags() {
-      const response = await api.get("/tags");
-
-      setTags(response.data);
-    }
-
-    fetchTags();
-  }, []);
-
   //para excutar quando a seleção de tags mudar ou quando a pesquisar mudar.
   useEffect(() => {
     async function fetchNotes() {
@@ -57,6 +47,23 @@ export function Home() {
 
     fetchNotes();
   }, [tagsSelected, search]);
+
+  
+
+  useEffect(() => {
+    async function fetchNotes() {
+      const response = await api.get('/notes');
+      setNotes(response.data);
+    }   
+
+    async function fetchTags() {
+      const response = await api.get("/tags");
+
+      setTags(response.data);
+    }
+    fetchNotes();
+    fetchTags();
+  }, []);
 
   return (
     <Container>
